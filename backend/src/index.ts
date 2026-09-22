@@ -13,12 +13,19 @@ import { createCampaignRouter } from './campaigns/campaignRoutes';
 import { createTrackingRouter } from './tracking/trackingRoutes';
 import { setupSocketServer } from './sockets/socketServer';
 
+function parseTrustProxy(raw: string): boolean | number | string {
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  const asNumber = Number(raw);
+  return Number.isInteger(asNumber) ? asNumber : raw;
+}
+
 const config = loadConfig();
 initDb();
 
 const app = express();
 if (process.env.TRUST_PROXY) {
-  app.set('trust proxy', process.env.TRUST_PROXY);
+  app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
 }
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: true, credentials: true } });
