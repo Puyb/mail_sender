@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getDb } from '../connection';
+import { isBotUserAgent } from '../../tracking/botDetector';
 import type { CampaignRecipientRow, Recipient, RecipientStatus } from '../../types';
 
 export function insertRecipients(campaignId: string, recipients: Recipient[]): void {
@@ -39,13 +40,17 @@ export function recordOpen(trackingId: string, meta: { userAgent?: string; ip?: 
   const db = getDb();
   const recipient = getRecipientByTrackingId(trackingId);
   if (!recipient) return undefined;
+  const isBot = isBotUserAgent(meta.userAgent);
+  db.prepare(
+    `INSERT INTO tracking_events (campaign_recipient_id, event_type, user_agent, ip_address, is_bot) VALUES (?, 'open', ?, ?, ?)`,
+  ).run(recipient.id, meta.userAgent ?? null, meta.ip ?? null, isBot ? 1 : 0);
+  // Bot hits (security scanners prefetching the pixel) are logged for audit but must not count
+  // toward open stats, which are bot-filtered by construction since they only read opened_at/open_count.
+  if (isBot) return recipient;
   const isFirstOpen = recipient.opened_at === null;
   db.prepare(
     `UPDATE campaign_recipients SET open_count = open_count + 1, opened_at = COALESCE(opened_at, strftime('%Y-%m-%dT%H:%M:%fZ','now')) WHERE id = ?`,
   ).run(recipient.id);
-  db.prepare(
-    `INSERT INTO tracking_events (campaign_recipient_id, event_type, user_agent, ip_address) VALUES (?, 'open', ?, ?)`,
-  ).run(recipient.id, meta.userAgent ?? null, meta.ip ?? null);
   return { ...recipient, opened_at: isFirstOpen ? new Date().toISOString() : recipient.opened_at };
 }
 
@@ -53,11 +58,18 @@ export function recordClick(trackingId: string, linkId: number, meta: { userAgen
   const db = getDb();
   const recipient = getRecipientByTrackingId(trackingId);
   if (!recipient) return undefined;
+  const isBot = isBotUserAgent(meta.userAgent);
   db.prepare(
-    `UPDATE campaign_recipients SET click_count = click_count + 1, clicked_at = COALESCE(clicked_at, strftime('%Y-%m-%dT%H:%M:%fZ','now')) WHERE id = ?`,
+    `INSERT INTO tracking_events (campaign_recipient_id, event_type, link_id, user_agent, ip_address, is_bot) VALUES (?, 'click', ?, ?, ?, ?)`,
+  ).run(recipient.id, linkId, meta.userAgent ?? null, meta.ip ?? null, isBot ? 1 : 0);
+  if (isBot) return recipient;
+  db.prepare(
+    // A click implies the mail was read even if the (often blocked) open pixel never fired.
+    `UPDATE campaign_recipients
+     SET click_count = click_count + 1,
+         clicked_at = COALESCE(clicked_at, strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+         opened_at = COALESCE(opened_at, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+     WHERE id = ?`,
   ).run(recipient.id);
-  db.prepare(
-    `INSERT INTO tracking_events (campaign_recipient_id, event_type, link_id, user_agent, ip_address) VALUES (?, 'click', ?, ?, ?)`,
-  ).run(recipient.id, linkId, meta.userAgent ?? null, meta.ip ?? null);
   return recipient;
 }

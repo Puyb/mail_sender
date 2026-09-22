@@ -42,8 +42,18 @@ export const api = {
     return res.json() as Promise<{ recipients: Recipient[]; count: number; warnings: RecipientWarning[] }>;
   },
 
-  createCampaign: (draftUid: number, recipients: Recipient[]) =>
-    request<{ campaignId: string }>('/campaigns', { method: 'POST', body: JSON.stringify({ draftUid, recipients }) }),
+  createCampaign: (draftUid: number, recipients: Recipient[], sendRatePerMinute?: number) =>
+    request<{ campaignId: string }>('/campaigns', {
+      method: 'POST',
+      body: JSON.stringify({ draftUid, recipients, sendRatePerMinute }),
+    }),
   listCampaigns: () => request<{ campaigns: CampaignSummary[] }>('/campaigns'),
   getCampaign: (id: string) => request<CampaignDetail>(`/campaigns/${id}`),
+  getDefaultSendRate: () => request<{ emailsPerMinute: number }>('/campaigns/defaults'),
+  updateSendRate: (id: string, emailsPerMinute: number) =>
+    request<{ ok: boolean }>(`/campaigns/${id}/send-rate`, {
+      method: 'PATCH',
+      body: JSON.stringify({ emailsPerMinute }),
+    }),
+  stopCampaign: (id: string) => request<{ ok: boolean }>(`/campaigns/${id}/stop`, { method: 'POST' }),
 };

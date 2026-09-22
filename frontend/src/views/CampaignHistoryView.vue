@@ -2,6 +2,7 @@
 import { onMounted } from 'vue';
 import { useCampaignStore } from '../stores/campaignStore';
 import CampaignStatusBadge from '../components/CampaignStatusBadge.vue';
+import { formatRate } from '../utils/format';
 
 const campaignStore = useCampaignStore();
 
@@ -20,8 +21,8 @@ onMounted(() => {
         <th>Statut</th>
         <th>Envoyés / Total</th>
         <th>Échecs</th>
-        <th>Ouvertures</th>
-        <th>Clics</th>
+        <th>% Ouverts</th>
+        <th>% Cliqués</th>
         <th>Date</th>
       </tr>
     </thead>
@@ -31,8 +32,8 @@ onMounted(() => {
         <td><CampaignStatusBadge :status="c.status" /></td>
         <td>{{ c.sent_count }} / {{ c.total_recipients }}</td>
         <td>{{ c.failed_count }}</td>
-        <td>{{ c.tracking.uniqueOpens }}</td>
-        <td>{{ c.tracking.uniqueClicks }}</td>
+        <td>{{ formatRate(c.tracking.uniqueOpens, c.sent_count) }}</td>
+        <td>{{ formatRate(c.tracking.uniqueClicks, c.sent_count) }}</td>
         <td>{{ new Date(c.created_at).toLocaleString() }}</td>
       </tr>
     </tbody>

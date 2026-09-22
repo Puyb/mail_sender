@@ -28,7 +28,7 @@ export function getCampaignLinkStats(campaignId: string): LinkClickStat[] {
               COUNT(te.id) AS totalClicks,
               COUNT(DISTINCT te.campaign_recipient_id) AS uniqueClicks
        FROM campaign_links cl
-       LEFT JOIN tracking_events te ON te.link_id = cl.id AND te.event_type = 'click'
+       LEFT JOIN tracking_events te ON te.link_id = cl.id AND te.event_type = 'click' AND te.is_bot = 0
        WHERE cl.campaign_id = ?
        GROUP BY cl.id
        ORDER BY totalClicks DESC`,

@@ -4,6 +4,7 @@ import type { AppConfig } from '../config';
 import { requireAuth } from '../auth/authMiddleware';
 import { getCredentials } from '../auth/sessionStore';
 import { listDrafts, fetchDraftRawMime } from './imapClient';
+import { normalizeAppleInlineImagesForPreview } from './appleDraftNormalizer';
 
 export function createDraftRouter(config: AppConfig): Router {
   const router = Router();
@@ -28,10 +29,14 @@ export function createDraftRouter(config: AppConfig): Router {
     try {
       const rawMime = await fetchDraftRawMime(config, creds, uid);
       const parsed = await simpleParser(rawMime);
+      let html = typeof parsed.html === 'string' ? parsed.html : null;
+      if (html) {
+        html = normalizeAppleInlineImagesForPreview(html, parsed.attachments ?? []);
+      }
       res.json({
         uid,
         subject: parsed.subject ?? '(sans sujet)',
-        html: typeof parsed.html === 'string' ? parsed.html : null,
+        html,
         text: typeof parsed.text === 'string' ? parsed.text : null,
         attachmentCount: parsed.attachments?.length ?? 0,
       });

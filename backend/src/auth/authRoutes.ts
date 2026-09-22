@@ -1,15 +1,17 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import type { Server } from 'socket.io';
 import type { AppConfig } from '../config';
 import { testImapLogin } from '../mail/imapClient';
 import { setCredentials, clearCredentials, getCredentials } from './sessionStore';
+import { resumeInterruptedCampaigns } from '../campaigns/campaignService';
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
 
-export function createAuthRouter(config: AppConfig): Router {
+export function createAuthRouter(config: AppConfig, io: Server): Router {
   const router = Router();
 
   router.post('/login', async (req, res) => {
@@ -33,6 +35,9 @@ export function createAuthRouter(config: AppConfig): Router {
       }
       setCredentials(req.sessionID, { email, password });
       res.json({ email });
+      resumeInterruptedCampaigns(config, io, email, { email, password }).catch((resumeErr: Error) => {
+        console.error(`Échec de la reprise des campagnes interrompues pour ${email} :`, resumeErr.message);
+      });
     });
   });
 

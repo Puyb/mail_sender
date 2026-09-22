@@ -94,3 +94,8 @@ export interface CampaignCompletedEvent {
   totalRecipients: number;
   durationMs: number;
 }
+
+export interface CampaignRateChangedEvent {
+  campaignId: string;
+  emailsPerMinute: number;
+}

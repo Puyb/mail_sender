@@ -24,6 +24,8 @@ export interface CampaignRow {
   subject: string;
   draft_uid: string | null;
   raw_mime: Buffer;
+  rendered_html: string | null;
+  rendered_text: string | null;
   status: CampaignStatus;
   total_recipients: number;
   sent_count: number;
@@ -66,6 +68,7 @@ export interface TrackingEventRow {
   occurred_at: string;
   user_agent: string | null;
   ip_address: string | null;
+  is_bot: number;
 }
 
 export interface SessionCredentials {

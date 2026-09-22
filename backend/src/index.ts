@@ -35,7 +35,7 @@ const sessionMiddleware = createSessionMiddleware(config);
 app.use(express.json());
 app.use(sessionMiddleware);
 
-app.use('/api/auth', createAuthRouter(config));
+app.use('/api/auth', createAuthRouter(config, io));
 app.use('/api/drafts', createDraftRouter(config));
 app.use('/api/uploads', createUploadRouter(config));
 app.use('/api/campaigns', createCampaignRouter(config, io));

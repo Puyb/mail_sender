@@ -27,7 +27,15 @@ export function initDb(): Database.Database {
   const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
   for (const file of files) {
     const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf-8');
-    db.exec(sql);
+    try {
+      db.exec(sql);
+    } catch (err) {
+      // Migrations re-run on every boot (no migrations-applied table); ALTER TABLE ADD COLUMN
+      // isn't idempotent in SQLite, so ignore that specific rerun failure and rethrow anything else.
+      if (!/duplicate column name/i.test((err as Error).message)) {
+        throw err;
+      }
+    }
   }
   return db;
 }

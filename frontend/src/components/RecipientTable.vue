@@ -5,6 +5,8 @@ defineProps<{
   recipients: Recipient[];
   warnings: RecipientWarning[];
 }>();
+
+const emit = defineEmits<{ remove: [email: string] }>();
 </script>
 
 <template>
@@ -18,13 +20,16 @@ defineProps<{
     </details>
     <table v-if="recipients.length">
       <thead>
-        <tr><th>Email</th><th>Prénom</th><th>Nom</th></tr>
+        <tr><th>Email</th><th>Prénom</th><th>Nom</th><th></th></tr>
       </thead>
       <tbody>
         <tr v-for="(r, i) in recipients.slice(0, 50)" :key="i">
           <td>{{ r.email }}</td>
           <td>{{ r.firstName ?? '' }}</td>
           <td>{{ r.lastName ?? '' }}</td>
+          <td>
+            <a href="#" role="button" class="outline secondary" style="padding: 0.15rem 0.6rem" title="Supprimer" @click.prevent="emit('remove', r.email)">✕</a>
+          </td>
         </tr>
       </tbody>
     </table>
