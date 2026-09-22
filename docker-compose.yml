@@ -1,0 +1,43 @@
+services:
+  mail-sender:
+    build: .
+    # image: ghcr.io/votre-org/mail-sender:latest   # alternative si vous utilisez une image déjà buildée
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_MAX_AGE_MS: 28800000
+      TRUST_PROXY: 1              # à garder si un reverse proxy (nginx/traefik) fait le TLS devant
+
+      IMAP_HOST: imap.example.com
+      IMAP_PORT: 993
+      IMAP_SECURE: "true"
+      IMAP_DRAFTS_FOLDERS: "Drafts,INBOX.Drafts,[Gmail]/Drafts,Brouillons"
+
+      SMTP_HOST: smtp.example.com
+      SMTP_PORT: 465
+      SMTP_SECURE: "true"
+
+      SEND_RATE_EMAILS_PER_MINUTE: 10
+
+      UPLOAD_MAX_FILE_SIZE_BYTES: 5242880
+      UPLOAD_ALLOWED_EXTENSIONS: ".csv,.vcf"
+
+      TRACKING_PUBLIC_BASE_URL: https://mailer.example.com
+
+      DATA_DIR: /app/data
+    # Alternative à `environment:` ci-dessus : garder les valeurs dans un
+    # fichier .env (copié depuis .env.example) non versionné, monté nulle
+    # part mais simplement lu par docker compose au démarrage :
+    # env_file:
+    #   - .env
+    volumes:
+      # Persiste la base SQLite (mail-sender.sqlite + fichiers WAL) en dehors
+      # du conteneur.
+      - ./data:/app/data
+      # Optionnel : si vous préférez repasser par un fichier de config JSON
+      # monté depuis l'hôte plutôt que des variables d'env pour un paramètre
+      # particulier, montez-le ici et lisez-le dans backend/src/config.ts.
+      # - ./config/config.json:/app/config/config.json:ro
