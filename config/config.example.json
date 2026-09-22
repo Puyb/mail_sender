@@ -1,0 +1,28 @@
+{
+  "server": {
+    "port": 3000,
+    "sessionSecret": "CHANGE_ME_LONG_RANDOM_STRING",
+    "sessionMaxAgeMs": 28800000
+  },
+  "imap": {
+    "host": "imap.example.com",
+    "port": 993,
+    "secure": true,
+    "draftsFolderCandidates": ["Drafts", "INBOX.Drafts", "[Gmail]/Drafts", "Brouillons"]
+  },
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 465,
+    "secure": true
+  },
+  "sendRate": {
+    "emailsPerMinute": 10
+  },
+  "uploads": {
+    "maxFileSizeBytes": 5242880,
+    "allowedExtensions": [".csv", ".vcf"]
+  },
+  "tracking": {
+    "publicBaseUrl": "https://mailer.example.com"
+  }
+}

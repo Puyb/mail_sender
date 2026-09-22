@@ -1,0 +1,40 @@
+{
+  "name": "mail-sender-backend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "cheerio": "^1.0.0",
+    "csv-parse": "^7.0.2",
+    "escape-html": "^1.0.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "imapflow": "^1.0.170",
+    "mailparser": "^3.7.2",
+    "multer": "^2.0.0",
+    "nodemailer": "^10.0.10",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.0.3",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/escape-html": "^1.0.4",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.1",
+    "@types/mailparser": "^3.4.5",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.2",
+    "@types/nodemailer": "^6.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
